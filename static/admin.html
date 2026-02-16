@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin POS Pro V2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Sarabun', sans-serif; overflow-x: hidden; }
+        .sidebar { height: 100vh; position: fixed; top: 0; left: 0; width: 250px; background: #1a1c23; color: white; z-index: 1000; }
+        .nav-link { color: #aaa; cursor: pointer; padding: 15px; margin: 5px; border-radius: 8px; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background: #0d6efd; color: white; transform: translateX(5px); }
+        .main-content { margin-left: 250px; padding: 30px; margin-right: 360px; transition: 0.3s; }
+        
+        /* Product & Cart */
+        .product-card { cursor: pointer; transition: 0.2s; border: none; overflow: hidden; background: white; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .product-card:hover { transform: translateY(-5px); border: 1px solid #0d6efd; }
+        .product-img-wrapper { height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .product-img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-section { background: white; border-left: 1px solid #eee; height: 100vh; position: fixed; top: 0; right: 0; width: 360px; padding: 25px; box-shadow: -5px 0 20px rgba(0,0,0,0.05); z-index: 900; display: flex; flex-direction: column; }
+        .cart-items { flex-grow: 1; overflow-y: auto; }
+        
+        .hidden { display: none !important; }
+        .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .badge-status { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 70px; } .nav-link span { display: none; } .main-content { margin-left: 70px; margin-right: 0; } .cart-section { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="sidebar p-3">
+    <h4 class="mb-4 fw-bold text-white text-center"><i class="fa-solid fa-rocket"></i><span class="ms-2">V2</span></h4>
+    <div class="nav-link active" onclick="showPage('pos')" id="nav-pos"><i class="fa-solid fa-cash-register fa-lg"></i> <span class="ms-2">ขายสินค้า</span></div>
+    <div class="nav-link" onclick="showPage('products')" id="nav-products"><i class="fa-solid fa-boxes-stacked fa-lg"></i> <span class="ms-2">คลังสินค้า</span></div>
+    <div class="nav-link" onclick="showPage('report')" id="nav-report"><i class="fa-solid fa-users-viewfinder fa-lg"></i> <span class="ms-2">วิเคราะห์ลูกค้า</span></div>
+</nav>
+
+<div class="main-content">
+    
+    <div id="page-pos" class="page-section">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="fw-bold m-0 text-dark">🛒 เลือกสินค้า</h3>
+            <input type="text" class="form-control w-auto" placeholder="ค้นหา..." onkeyup="searchProduct(this.value)">
+        </div>
+        <div class="row g-3" id="product-grid"></div>
+    </div>
+
+    <div id="page-products" class="page-section hidden">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="fw-bold">📦 คลังสินค้า</h3>
+            <button class="btn btn-primary rounded-pill px-4" onclick="openAddModal()">+ เพิ่มสินค้า</button>
+        </div>
+        <table class="table bg-white rounded shadow-sm align-middle">
+            <thead class="table-light"><tr><th>รูป</th><th>ชื่อ</th><th>ราคา</th><th>ต้นทุน</th><th>จัดการ</th></tr></thead>
+            <tbody id="product-table-body"></tbody>
+        </table>
+    </div>
+
+    <div id="page-report" class="page-section hidden">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="fw-bold">🕵️‍♀️ วิเคราะห์ลูกค้า (Transactions)</h3>
+            <button class="btn btn-outline-primary" onclick="loadReport()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>เวลา</th>
+                            <th>ลูกค้า</th>
+                            <th>รายการสินค้า</th>
+                            <th>ยอดรวม</th>
+                            <th>สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        <tr><td colspan="5" class="text-center p-5">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cart-section">
+    <h4 class="fw-bold mb-3"><i class="fa-solid fa-basket-shopping me-2"></i>ตะกร้า <span class="badge bg-primary rounded-pill ms-2" id="cart-count">0</span></h4>
+    <div class="cart-items" id="cart-items-container"></div>
+    <div class="mt-auto">
+        <div class="d-flex justify-content-between align-items-end mb-2"><span>รวมสุทธิ</span><span class="fs-3 fw-bold text-dark" id="cart-total">฿ 0.00</span></div>
+        <button class="btn btn-success w-100 py-3 fs-5 fw-bold rounded-3" onclick="checkout()"><i class="fa-solid fa-qrcode me-2"></i> รับเงิน</button>
+        <button class="btn btn-light w-100 mt-2 text-muted" onclick="clearCart()">ล้างตะกร้า</button>
+    </div>
+</div>
+
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="fw-bold">เพิ่มสินค้าใหม่</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="text" id="new-name" class="form-control mb-2" placeholder="ชื่อสินค้า">
+                <div class="row g-2 mb-2">
+                    <div class="col"><input type="number" id="new-price" class="form-control" placeholder="ราคาขาย"></div>
+                    <div class="col"><input type="number" id="new-cost" class="form-control" placeholder="ต้นทุน"></div>
+                </div>
+                
+                <label class="form-label small text-muted">รูปสินค้า (อัปโหลดไฟล์)</label>
+                <input type="file" id="new-file" class="form-control" accept="image/*" onchange="handleFileUpload(this)">
+                
+                <input type="hidden" id="uploaded-url"> <div id="upload-status" class="mt-2 small text-primary hidden"><i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลดรูป...</div>
+                <img id="img-preview" src="" class="mt-2 rounded border hidden" style="max-height: 100px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary px-4" onclick="saveProduct()" id="btn-save-prod">บันทึก</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered text-center">
+        <div class="modal-content p-4 border-0 shadow">
+            <h4 class="fw-bold text-success">สแกนจ่าย/รับแต้ม</h4>
+            <h1 class="my-3 fw-bold" id="qr-total-display"></h1>
+            <img id="qr-image" src="" class="img-fluid border p-2 rounded" width="250">
+            <button class="btn btn-secondary mt-3" data-bs-dismiss="modal" onclick="clearCart()">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const MERCHANT_ID = "4980c176-a1ec-4771-a9fa-ce87320435c9";
+    const LIFF_ID = "2009142385-rGVgyn7a";
+    let products = [], cart = [];
+    let addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+
+    document.addEventListener('DOMContentLoaded', () => { loadProducts(); });
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+        document.getElementById('page-' + pageId).classList.remove('hidden');
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-' + pageId).classList.add('active');
+        if(pageId === 'report') loadReport();
+    }
+
+    // --- Upload Logic ---
+    async function handleFileUpload(input) {
+        if(input.files && input.files[0]) {
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('upload-status').classList.remove('hidden');
+            document.getElementById('btn-save-prod').disabled = true;
+
+            try {
+                const res = await fetch('/api/v1/upload/', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if(data.status === 'ok') {
+                    document.getElementById('uploaded-url').value = data.url;
+                    document.getElementById('img-preview').src = data.url;
+                    document.getElementById('img-preview').classList.remove('hidden');
+                }
+            } catch(e) { alert("Upload failed: " + e); }
+            finally {
+                document.getElementById('upload-status').classList.add('hidden');
+                document.getElementById('btn-save-prod').disabled = false;
+            }
+        }
+    }
+
+    // --- Product Logic ---
+    async function loadProducts() {
+        const res = await fetch(`/api/v1/product/list/${MERCHANT_ID}`);
+        products = await res.json();
+        renderProductGrid(products);
+        renderProductTable();
+    }
+
+    function renderProductGrid(data) {
+        document.getElementById('product-grid').innerHTML = data.map(p => `
+            <div class="col-md-4 col-lg-3"><div class="product-card h-100" onclick="addToCart('${p.id}')">
+                <div class="product-img-wrapper">${p.image_url ? `<img src="${p.image_url}" class="product-img">` : '<i class="fa-solid fa-box text-secondary fa-2x"></i>'}</div>
+                <div class="p-3 text-center"><div class="fw-bold text-truncate">${p.name}</div><div class="text-primary fw-bold">฿ ${p.price}</div></div>
+            </div></div>`).join('');
+    }
+
+    function renderProductTable() {
+        document.getElementById('product-table-body').innerHTML = products.map(p => `
+            <tr><td><img src="${p.image_url || ''}" width="40" height="40" class="rounded object-fit-cover"></td>
+            <td class="fw-bold">${p.name}</td><td>${p.price}</td><td class="text-muted">${p.cost_price}</td>
+            <td><button class="btn btn-sm btn-light text-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+    }
+
+    async function saveProduct() {
+        const name = document.getElementById('new-name').value;
+        const price = document.getElementById('new-price').value;
+        const cost = document.getElementById('new-cost').value;
+        const image = document.getElementById('uploaded-url').value; // ใช้ URL ที่ได้จากการอัปโหลด
+
+        if(!name || !price) return alert("กรอกข้อมูลให้ครบ");
+
+        await fetch('/api/v1/product/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ merchant_id: MERCHANT_ID, name, price: parseFloat(price), cost_price: parseFloat(cost||0), image_url: image })
+        });
+        addModal.hide(); loadProducts();
+    }
+    
+    function openAddModal() { 
+        document.getElementById('new-name').value = '';
+        document.getElementById('new-price').value = '';
+        document.getElementById('new-file').value = ''; 
+        document.getElementById('uploaded-url').value = '';
+        document.getElementById('img-preview').classList.add('hidden');
+        addModal.show(); 
+    }
+    
+    async function deleteProduct(id) { if(confirm("ลบสินค้า?")) { await fetch(`/api/v1/product/delete/${id}`, {method: 'DELETE'}); loadProducts(); } }
+
+    // --- Cart Logic (ย่อ) ---
+    function addToCart(pid) {
+        const p = products.find(x => x.id === pid);
+        const exist = cart.find(x => x.product_id === pid);
+        exist ? exist.quantity++ : cart.push({...p, product_id: pid, quantity: 1, cost: p.cost_price});
+        renderCart();
+    }
+    function renderCart() {
+        const con = document.getElementById('cart-items-container');
+        if(!cart.length) { con.innerHTML = '<div class="text-center text-muted mt-5">ยังไม่มีสินค้า</div>'; document.getElementById('cart-count').innerText=0; document.getElementById('cart-total').innerText='฿ 0'; return;}
+        let total = 0, count = 0;
+        con.innerHTML = cart.map((i, idx) => {
+            total += i.price * i.quantity; count += i.quantity;
+            return `<div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                <div><div class="fw-bold">${i.name}</div><div class="small text-muted">${i.price} x ${i.quantity}</div></div>
+                <div class="text-end fw-bold">฿ ${i.price*i.quantity} <i class="fa-solid fa-minus-circle text-danger ms-2" style="cursor:pointer" onclick="removeFromCart(${idx})"></i></div>
+            </div>`;
+        }).join('');
+        document.getElementById('cart-total').innerText = `฿ ${total.toLocaleString()}`;
+        document.getElementById('cart-count').innerText = count;
+    }
+    function removeFromCart(idx) { cart[idx].quantity > 1 ? cart[idx].quantity-- : cart.splice(idx, 1); renderCart(); }
+    function clearCart() { cart = []; renderCart(); }
+
+    async function checkout() {
+        if(!cart.length) return alert("เลือกสินค้าก่อน");
+        const total = cart.reduce((s, i) => s + (i.price*i.quantity), 0);
+        const res = await fetch('/api/v1/qr/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ merchant_id: MERCHANT_ID, items: cart, total_amount: total }) });
+        const data = await res.json();
+        if(data.status === 'ok') {
+            const liff = `https://liff.line.me/${LIFF_ID}?qr_id=${data.qr_id}`;
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liff)}`;
+            document.getElementById('qr-total-display').innerText = `฿ ${total.toLocaleString()}`;
+            new bootstrap.Modal(document.getElementById('qrModal')).show();
+        }
+    }
+
+    // --- Report / CRM Logic ---
+    async function loadReport() {
+        const tbody = document.getElementById('report-table-body');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>';
+        
+        try {
+            const res = await fetch(`/api/v1/analytics/transactions/${MERCHANT_ID}`);
+            const data = await res.json();
+            
+            if(!data.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">ยังไม่มีรายการขาย</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(tx => {
+                // Customer Info
+                let customerHtml = '<span class="text-muted small">ขาจร (ไม่สแกน)</span>';
+                if(tx.customer_name) {
+                    customerHtml = `
+                        <div class="d-flex align-items-center">
+                            <img src="${tx.customer_picture || 'https://via.placeholder.com/40'}" class="avatar-img me-2">
+                            <div>
+                                <div class="fw-bold text-dark">${tx.customer_name}</div>
+                                <div class="small text-success"><i class="fa-brands fa-line"></i> Member</div>
+                            </div>
+                        </div>`;
+                }
+
+                // Items Info
+                const itemsHtml = tx.transaction_items.map(i => 
+                    `<div class="small text-muted">• ${i.products?.name || 'สินค้า'} x${i.quantity}</div>`
+                ).join('');
+
+                // Status Badge
+                const statusBadge = tx.status === 'claimed' 
+                    ? '<span class="badge bg-success badge-status">สมาชิกสะสมแล้ว</span>'
+                    : '<span class="badge bg-secondary badge-status">รอสแกน / ขาจร</span>';
+                
+                // Time
+                const time = new Date(tx.created_at).toLocaleString('th-TH');
+
+                return `
+                <tr>
+                    <td><small class="text-muted">${time}</small></td>
+                    <td>${customerHtml}</td>
+                    <td>${itemsHtml || '-'}</td>
+                    <td class="fw-bold">฿ ${tx.amount}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
+            }).join('');
+
+        } catch(e) { console.error(e); }
+    }
+</script>
+</body>
+</html>

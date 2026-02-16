@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รับแต้ม...</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px 20px; }
+        .loader { font-size: 50px; }
+        .success { color: green; font-size: 60px; }
+        .error { color: red; font-size: 60px; }
+    </style>
+</head>
+<body>
+    <div id="status-icon" class="loader">⏳</div>
+    <h3 id="message">กำลังตรวจสอบข้อมูล...</h3>
+
+    <script>
+        const MY_LIFF_ID = "2009142385-rGVgyn7a"; 
+
+        async function main() {
+            await liff.init({ liffId: MY_LIFF_ID });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrId = urlParams.get('qr_id');
+
+            if (!qrId) {
+                document.getElementById('status-icon').innerText = "📷";
+                document.getElementById('message').innerText = "กรุณาสแกน QR จากร้านค้า";
+                return;
+            }
+
+            // 🔥 V2: ดึงข้อมูลโปรไฟล์ลูกค้า
+            const profile = await liff.getProfile();
+            
+            try {
+                const res = await fetch('/api/v1/qr/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        line_user_id: profile.userId,
+                        display_name: profile.displayName, // ส่งชื่อ
+                        picture_url: profile.pictureUrl || "", // ส่งรูป
+                        qr_id: qrId
+                    })
+                });
+                
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('status-icon').className = "success";
+                    document.getElementById('status-icon').innerText = "✅";
+                    document.getElementById('message').innerText = result.message;
+                } else {
+                    document.getElementById('status-icon').className = "error";
+                    document.getElementById('status-icon').innerText = "❌";
+                    document.getElementById('message').innerText = result.message;
+                }
+            } catch (e) {
+                document.getElementById('message').innerText = "Error: " + e;
+            }
+        }
+        main();
+    </script>
+</body>
+</html>

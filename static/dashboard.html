@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f4f6f8; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #333; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: #e3f2fd; padding: 15px; border-radius: 5px; text-align: center; }
+        .stat-val { font-size: 24px; font-weight: bold; color: #1565c0; }
+        .stat-label { font-size: 12px; color: #555; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2b2b2b; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <h2>📊 แดชบอร์ดเจ้าของร้าน</h2>
+    
+    <div class="card">
+        <h3>สรุปยอดขายวันนี้</h3>
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-val" id="totalRev">0</div>
+                <div class="stat-label">ยอดขายรวม</div>
+            </div>
+            <div class="stat-box" style="background: #e8f5e9;">
+                <div class="stat-val" style="color: #2e7d32;" id="memberRev">0</div>
+                <div class="stat-label">จากสมาชิก</div>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 10px;">
+            สมาชิกคิดเป็น <strong id="memberPct">0%</strong> ของยอดขาย
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>บันทึกยอดปิดร้าน 📝</h3>
+        <p style="font-size: 14px; color: #666;">กรอกยอดขายรวมทั้งหมดของวันนี้ (เงินสด + โอน + บัตร)</p>
+        <input type="number" id="dailyTotal" placeholder="ระบุจำนวนเงิน (บาท)">
+        <button onclick="saveDailyTotal()">บันทึกยอด</button>
+    </div>
+
+    <script>
+        // ✅ ID ใหม่ของคุณ
+        const MERCHANT_ID = "4980c176-a1ec-4771-a9fa-ce87320435c9"; 
+
+        async function loadData() {
+            try {
+                const res = await fetch(`/api/v1/analytics/summary/${MERCHANT_ID}`);
+                const data = await res.json();
+                
+                document.getElementById('totalRev').innerText = data.total_revenue.toLocaleString();
+                document.getElementById('memberRev').innerText = data.member_revenue.toLocaleString();
+                document.getElementById('memberPct').innerText = data.member_percentage + "%";
+                
+                if(data.total_revenue > 0) {
+                    document.getElementById('dailyTotal').value = data.total_revenue;
+                }
+            } catch (e) {
+                console.error("Error loading data", e);
+            }
+        }
+
+        async function saveDailyTotal() {
+            const amount = document.getElementById('dailyTotal').value;
+            if(!amount) return alert("กรุณากรอกยอดเงิน");
+
+            const res = await fetch('/api/v1/analytics/daily', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    merchant_id: MERCHANT_ID,
+                    total_amount: parseFloat(amount)
+                })
+            });
+
+            if(res.ok) {
+                alert("บันทึกเรียบร้อย!");
+                loadData(); 
+            } else {
+                alert("เกิดข้อผิดพลาด");
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
