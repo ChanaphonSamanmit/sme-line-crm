@@ -3,84 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin POS Pro V2</title>
+    <title>Admin POS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        body { background: #f0f2f5; font-family: 'Sarabun', sans-serif; overflow-x: hidden; }
-        .sidebar { height: 100vh; position: fixed; top: 0; left: 0; width: 250px; background: #1a1c23; color: white; z-index: 1000; }
-        .nav-link { color: #aaa; cursor: pointer; padding: 15px; margin: 5px; border-radius: 8px; transition: 0.2s; }
-        .nav-link:hover, .nav-link.active { background: #0d6efd; color: white; transform: translateX(5px); }
-        .main-content { margin-left: 250px; padding: 30px; margin-right: 360px; transition: 0.3s; }
-        
-        /* Product & Cart */
-        .product-card { cursor: pointer; transition: 0.2s; border: none; overflow: hidden; background: white; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .product-card:hover { transform: translateY(-5px); border: 1px solid #0d6efd; }
-        .product-img-wrapper { height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .product-img { width: 100%; height: 100%; object-fit: cover; }
-        .cart-section { background: white; border-left: 1px solid #eee; height: 100vh; position: fixed; top: 0; right: 0; width: 360px; padding: 25px; box-shadow: -5px 0 20px rgba(0,0,0,0.05); z-index: 900; display: flex; flex-direction: column; }
-        .cart-items { flex-grow: 1; overflow-y: auto; }
-        
-        .hidden { display: none !important; }
-        .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .badge-status { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; }
-
-        @media (max-width: 992px) {
-            .sidebar { width: 70px; } .nav-link span { display: none; } .main-content { margin-left: 70px; margin-right: 0; } .cart-section { display: none; }
+        :root {
+            --sidebar-bg: #0f1117;
+            --sidebar-width: 250px;
+            --cart-width: 360px;
+            --accent: #4f6ef7;
+            --accent-2: #22d3a5;
+            --accent-warn: #f7944f;
+            --card-bg: #ffffff;
+            --body-bg: #f0f3fb;
+            --text-muted: #8a93a8;
         }
+        * { box-sizing: border-box; }
+        body { background: var(--body-bg); font-family: 'IBM Plex Sans Thai', 'Sarabun', sans-serif; overflow-x: hidden; margin: 0; }
+
+        /* ── Sidebar ── */
+        .sidebar { height: 100vh; position: fixed; top: 0; left: 0; width: var(--sidebar-width); background: var(--sidebar-bg); color: white; z-index: 1000; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .nav-link { color: #8a93a8; cursor: pointer; padding: 13px 16px; margin: 3px 10px; border-radius: 10px; transition: all 0.18s; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; }
+        .nav-link:hover { background: rgba(79,110,247,0.12); color: white; }
+        .nav-link.active { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(79,110,247,0.35); }
+        .nav-icon { width: 20px; text-align: center; }
+
+        /* ── Main Content ── */
+        .main-content { margin-left: var(--sidebar-width); padding: 28px 32px; margin-right: var(--cart-width); min-height: 100vh; }
+
+        /* ── Product & Cart ── */
+        .product-card { cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
+        .product-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 24px rgba(79,110,247,0.15); }
+        .product-img-wrapper { height: 130px; background: #f4f6ff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .product-img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-section { background: white; border-left: 1px solid #eaecf5; height: 100vh; position: fixed; top: 0; right: 0; width: var(--cart-width); padding: 24px; box-shadow: -5px 0 30px rgba(0,0,0,0.06); z-index: 900; display: flex; flex-direction: column; }
+        .cart-items { flex-grow: 1; overflow-y: auto; }
+
+        .hidden { display: none !important; }
+        .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #eaecf5; }
+
+        /* ── Page Header ── */
+        .page-header { margin-bottom: 28px; }
+        .page-header h3 { font-weight: 700; font-size: 1.5rem; color: #1a1d2e; margin: 0; }
+        .page-header p { color: var(--text-muted); margin: 4px 0 0; font-size: 0.875rem; }
+
+        /* ════════════════════════════════
+           ANALYTICS PAGE
+        ════════════════════════════════ */
+
+        /* Dashboard Cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #eaecf5;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; margin-bottom: 14px;
+        }
+        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; color: #1a1d2e; line-height: 1; }
+        .stat-card .stat-label { color: var(--text-muted); font-size: 0.82rem; margin-top: 5px; }
+        .stat-card .stat-change { font-size: 0.78rem; font-weight: 600; margin-top: 8px; }
+        .stat-card .bg-deco {
+            position: absolute; right: -16px; bottom: -16px;
+            width: 80px; height: 80px; border-radius: 50%;
+            opacity: 0.06;
+        }
+
+        .stat-blue .stat-icon { background: #eef1ff; color: var(--accent); }
+        .stat-blue .bg-deco { background: var(--accent); }
+        .stat-green .stat-icon { background: #e8fdf6; color: var(--accent-2); }
+        .stat-green .bg-deco { background: var(--accent-2); }
+        .stat-orange .stat-icon { background: #fff4ed; color: var(--accent-warn); }
+        .stat-orange .bg-deco { background: var(--accent-warn); }
+        .stat-purple .stat-icon { background: #f3eeff; color: #9c6ef7; }
+        .stat-purple .bg-deco { background: #9c6ef7; }
+
+        /* Chart Card */
+        .chart-card {
+            background: white; border-radius: 16px; padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eaecf5;
+        }
+        .chart-card h6 { font-weight: 700; color: #1a1d2e; font-size: 0.95rem; margin: 0 0 4px; }
+        .chart-card .sub { color: var(--text-muted); font-size: 0.78rem; margin-bottom: 18px; }
+        .chart-toggle .btn { font-size: 0.78rem; padding: 5px 14px; border-radius: 20px; border: 1.5px solid #eaecf5; background: transparent; color: #8a93a8; font-family: inherit; cursor: pointer; transition: 0.15s; }
+        .chart-toggle .btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* Top Tables */
+        .rank-table { width: 100%; }
+        .rank-table tr { border-bottom: 1px solid #f2f4fa; }
+        .rank-table tr:last-child { border-bottom: none; }
+        .rank-table td { padding: 11px 4px; vertical-align: middle; }
+        .rank-num { width: 28px; height: 28px; border-radius: 8px; background: #f2f4fa; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #8a93a8; }
+        .rank-num.gold { background: #fff3cd; color: #d4960a; }
+        .rank-num.silver { background: #f0f0f0; color: #888; }
+        .rank-num.bronze { background: #fde8dc; color: #c0632e; }
+        .progress-bar-custom { height: 6px; background: #f2f4fa; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .progress-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.8s ease; }
+        .progress-fill.green { background: var(--accent-2); }
+
+        /* Transaction Table */
+        .tx-table { width: 100%; }
+        .tx-table th { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0 12px 12px; }
+        .tx-table td { padding: 12px; vertical-align: middle; border-top: 1px solid #f2f4fa; font-size: 0.875rem; }
+        .badge-claimed { background: #e8fdf6; color: #0faa7e; font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+        .badge-pending { background: #f2f4fa; color: #8a93a8; font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .main-content { margin-right: 0; } .cart-section { display: none; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .nav-link span { display: none; } .main-content { margin-left: 70px; } }
     </style>
 </head>
 <body>
 
-<nav class="sidebar p-3">
-    <h4 class="mb-4 fw-bold text-white text-center"><i class="fa-solid fa-rocket"></i><span class="ms-2">V2</span></h4>
-    <div class="nav-link active" onclick="showPage('pos')" id="nav-pos"><i class="fa-solid fa-cash-register fa-lg"></i> <span class="ms-2">ขายสินค้า</span></div>
-    <div class="nav-link" onclick="showPage('products')" id="nav-products"><i class="fa-solid fa-boxes-stacked fa-lg"></i> <span class="ms-2">คลังสินค้า</span></div>
-    <div class="nav-link" onclick="showPage('report')" id="nav-report"><i class="fa-solid fa-users-viewfinder fa-lg"></i> <span class="ms-2">วิเคราะห์ลูกค้า</span></div>
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">🚀</div>
+            <span class="fw-bold text-white" style="font-size:1.05rem;">POS Pro V2</span>
+        </div>
+    </div>
+    <div class="p-2 mt-2">
+        <div class="nav-link active" onclick="showPage('pos')" id="nav-pos"><span class="nav-icon"><i class="fa-solid fa-cash-register"></i></span><span>ขายสินค้า</span></div>
+        <div class="nav-link" onclick="showPage('products')" id="nav-products"><span class="nav-icon"><i class="fa-solid fa-boxes-stacked"></i></span><span>คลังสินค้า</span></div>
+        <div class="nav-link" onclick="showPage('report')" id="nav-report"><span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span><span>วิเคราะห์ลูกค้า</span></div>
+    </div>
 </nav>
 
 <div class="main-content">
-    
+
     <div id="page-pos" class="page-section">
-        <div class="d-flex justify-content-between mb-4">
-            <h3 class="fw-bold m-0 text-dark">🛒 เลือกสินค้า</h3>
-            <input type="text" class="form-control w-auto" placeholder="ค้นหา..." onkeyup="searchProduct(this.value)">
+        <div class="d-flex justify-content-between align-items-center page-header">
+            <div><h3>🛒 เลือกสินค้า</h3><p>เลือกสินค้าแล้วเพิ่มลงตะกร้า</p></div>
+            <input type="text" class="form-control" style="width:220px;border-radius:20px;" placeholder="🔍 ค้นหาสินค้า..." onkeyup="searchProduct(this.value)">
         </div>
         <div class="row g-3" id="product-grid"></div>
     </div>
 
     <div id="page-products" class="page-section hidden">
-        <div class="d-flex justify-content-between mb-4">
-            <h3 class="fw-bold">📦 คลังสินค้า</h3>
-            <button class="btn btn-primary rounded-pill px-4" onclick="openAddModal()">+ เพิ่มสินค้า</button>
+        <div class="d-flex justify-content-between align-items-center page-header">
+            <div><h3>📦 คลังสินค้า</h3><p>จัดการสินค้าทั้งหมด</p></div>
+            <button class="btn btn-primary rounded-pill px-4" onclick="openAddModal()"><i class="fa-solid fa-plus me-1"></i> เพิ่มสินค้า</button>
         </div>
-        <table class="table bg-white rounded shadow-sm align-middle">
-            <thead class="table-light"><tr><th>รูป</th><th>ชื่อ</th><th>ราคา</th><th>ต้นทุน</th><th>จัดการ</th></tr></thead>
-            <tbody id="product-table-body"></tbody>
-        </table>
+        <div class="chart-card p-0" style="overflow:hidden">
+            <table class="table mb-0 align-middle">
+                <thead><tr style="background:#f8faff"><th class="ps-4">รูป</th><th>ชื่อสินค้า</th><th>ราคาขาย</th><th>ต้นทุน</th><th>จัดการ</th></tr></thead>
+                <tbody id="product-table-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="page-report" class="page-section hidden">
-        <div class="d-flex justify-content-between mb-4">
-            <h3 class="fw-bold">🕵️‍♀️ วิเคราะห์ลูกค้า (Transactions)</h3>
-            <button class="btn btn-outline-primary" onclick="loadReport()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <div class="d-flex justify-content-between align-items-center page-header">
+            <div><h3>📊 วิเคราะห์ลูกค้า</h3><p>ภาพรวมยอดขายและพฤติกรรมลูกค้า</p></div>
+            <button class="btn btn-outline-primary rounded-pill px-3" onclick="loadReport()" style="font-size:0.85rem;">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh
+            </button>
         </div>
-        
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>เวลา</th>
-                            <th>ลูกค้า</th>
-                            <th>รายการสินค้า</th>
-                            <th>ยอดรวม</th>
-                            <th>สถานะ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="report-table-body">
-                        <tr><td colspan="5" class="text-center p-5">กำลังโหลดข้อมูล...</td></tr>
-                    </tbody>
+
+        <div class="row g-3 mb-4" id="stat-cards">
+            <div class="col-6 col-xl-3"><div class="stat-card stat-blue" id="card-revenue">
+                <div class="stat-icon"><i class="fa-solid fa-baht-sign"></i></div>
+                <div class="stat-value" id="stat-revenue">—</div>
+                <div class="stat-label">รายได้รวม</div>
+                <div class="bg-deco"></div>
+            </div></div>
+            <div class="col-6 col-xl-3"><div class="stat-card stat-green" id="card-orders">
+                <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="stat-value" id="stat-orders">—</div>
+                <div class="stat-label">ออเดอร์ทั้งหมด</div>
+                <div class="bg-deco"></div>
+            </div></div>
+            <div class="col-6 col-xl-3"><div class="stat-card stat-purple">
+                <div class="stat-icon"><i class="fa-brands fa-line"></i></div>
+                <div class="stat-value" id="stat-members">—</div>
+                <div class="stat-label">สมาชิก LINE</div>
+                <div class="bg-deco"></div>
+            </div></div>
+            <div class="col-6 col-xl-3"><div class="stat-card stat-orange">
+                <div class="stat-icon"><i class="fa-solid fa-user-slash"></i></div>
+                <div class="stat-value" id="stat-walkin">—</div>
+                <div class="stat-label">ขาจร (ไม่สแกน)</div>
+                <div class="bg-deco"></div>
+            </div></div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6>กราฟยอดขาย</h6>
+                            <div class="sub">แสดงยอดขายตามช่วงเวลา</div>
+                        </div>
+                        <div class="chart-toggle d-flex gap-2">
+                            <button class="btn active" id="btn-daily" onclick="switchChart('daily')">รายวัน</button>
+                            <button class="btn" id="btn-monthly" onclick="switchChart('monthly')">รายเดือน</button>
+                        </div>
+                    </div>
+                    <canvas id="salesChart" height="90"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h6 class="mb-1">🏆 ลูกค้าประจำ (Top Customers)</h6>
+                    <div class="sub">เรียงตามยอดซื้อสะสม</div>
+                    <table class="rank-table" id="top-customers-table">
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-4" style="font-size:0.85rem">กำลังโหลด...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h6 class="mb-1">🔥 สินค้าขายดี (Top Products)</h6>
+                    <div class="sub">เรียงตามจำนวนขาย</div>
+                    <table class="rank-table" id="top-products-table">
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-4" style="font-size:0.85rem">กำลังโหลด...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h6 class="mb-1">📋 รายการขายล่าสุด</h6>
+            <div class="sub mb-3">ประวัติออเดอร์ทั้งหมด</div>
+            <div style="overflow-x:auto">
+                <table class="tx-table w-100">
+                    <thead><tr>
+                        <th>เวลา</th><th>ลูกค้า</th><th>รายการสินค้า</th><th>ยอดรวม</th><th>สถานะ</th>
+                    </tr></thead>
+                    <tbody id="report-table-body"><tr><td colspan="5" class="text-center py-5 text-muted">กำลังโหลด...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -88,48 +253,47 @@
 </div>
 
 <div class="cart-section">
-    <h4 class="fw-bold mb-3"><i class="fa-solid fa-basket-shopping me-2"></i>ตะกร้า <span class="badge bg-primary rounded-pill ms-2" id="cart-count">0</span></h4>
-    <div class="cart-items" id="cart-items-container"></div>
-    <div class="mt-auto">
-        <div class="d-flex justify-content-between align-items-end mb-2"><span>รวมสุทธิ</span><span class="fs-3 fw-bold text-dark" id="cart-total">฿ 0.00</span></div>
-        <button class="btn btn-success w-100 py-3 fs-5 fw-bold rounded-3" onclick="checkout()"><i class="fa-solid fa-qrcode me-2"></i> รับเงิน</button>
+    <h5 class="fw-bold mb-3">
+        <i class="fa-solid fa-basket-shopping me-2 text-primary"></i>ตะกร้า
+        <span class="badge bg-primary rounded-pill ms-1" id="cart-count">0</span>
+    </h5>
+    <div class="cart-items" id="cart-items-container"><div class="text-center text-muted mt-5" style="font-size:0.85rem">ยังไม่มีสินค้า</div></div>
+    <div class="mt-auto pt-3 border-top">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <span class="text-muted">รวมสุทธิ</span>
+            <span class="fs-2 fw-bold text-dark" id="cart-total">฿ 0</span>
+        </div>
+        <button class="btn btn-success w-100 py-3 fw-bold rounded-3" onclick="checkout()"><i class="fa-solid fa-qrcode me-2"></i>รับเงิน</button>
         <button class="btn btn-light w-100 mt-2 text-muted" onclick="clearCart()">ล้างตะกร้า</button>
     </div>
 </div>
 
 <div class="modal fade" id="addProductModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="fw-bold">เพิ่มสินค้าใหม่</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <input type="text" id="new-name" class="form-control mb-2" placeholder="ชื่อสินค้า">
-                <div class="row g-2 mb-2">
-                    <div class="col"><input type="number" id="new-price" class="form-control" placeholder="ราคาขาย"></div>
-                    <div class="col"><input type="number" id="new-cost" class="form-control" placeholder="ต้นทุน"></div>
-                </div>
-                
-                <label class="form-label small text-muted">รูปสินค้า (อัปโหลดไฟล์)</label>
-                <input type="file" id="new-file" class="form-control" accept="image/*" onchange="handleFileUpload(this)">
-                
-                <input type="hidden" id="uploaded-url"> <div id="upload-status" class="mt-2 small text-primary hidden"><i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลดรูป...</div>
-                <img id="img-preview" src="" class="mt-2 rounded border hidden" style="max-height: 100px;">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="fw-bold">เพิ่มสินค้าใหม่</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="text" id="new-name" class="form-control mb-2" placeholder="ชื่อสินค้า">
+            <div class="row g-2 mb-2">
+                <div class="col"><input type="number" id="new-price" class="form-control" placeholder="ราคาขาย"></div>
+                <div class="col"><input type="number" id="new-cost" class="form-control" placeholder="ต้นทุน"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary px-4" onclick="saveProduct()" id="btn-save-prod">บันทึก</button>
-            </div>
+            <label class="form-label small text-muted">รูปสินค้า</label>
+            <input type="file" id="new-file" class="form-control" accept="image/*" onchange="handleFileUpload(this)">
+            <input type="hidden" id="uploaded-url">
+            <div id="upload-status" class="mt-2 small text-primary hidden"><i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลด...</div>
+            <img id="img-preview" src="" class="mt-2 rounded border hidden" style="max-height:100px">
         </div>
-    </div>
+        <div class="modal-footer"><button type="button" class="btn btn-primary px-4" onclick="saveProduct()" id="btn-save-prod">บันทึก</button></div>
+    </div></div>
 </div>
 
 <div class="modal fade" id="qrModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered text-center">
-        <div class="modal-content p-4 border-0 shadow">
-            <h4 class="fw-bold text-success">สแกนจ่าย/รับแต้ม</h4>
-            <h1 class="my-3 fw-bold" id="qr-total-display"></h1>
-            <img id="qr-image" src="" class="img-fluid border p-2 rounded" width="250">
-            <button class="btn btn-secondary mt-3" data-bs-dismiss="modal" onclick="clearCart()">ปิดหน้าต่าง</button>
-        </div>
-    </div>
+    <div class="modal-dialog modal-dialog-centered text-center"><div class="modal-content p-4 border-0 shadow">
+        <h4 class="fw-bold text-success">สแกนจ่าย / รับแต้ม</h4>
+        <h1 class="my-3 fw-bold" id="qr-total-display"></h1>
+        <img id="qr-image" src="" class="img-fluid border p-2 rounded" width="250">
+        <button class="btn btn-secondary mt-3" data-bs-dismiss="modal" onclick="clearCart()">ปิด</button>
+    </div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -137,33 +301,32 @@
     const MERCHANT_ID = "4980c176-a1ec-4771-a9fa-ce87320435c9";
     const LIFF_ID = "2009142385-rGVgyn7a";
     let products = [], cart = [];
+    let salesChart = null;
+    let allTransactions = [];
     let addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
 
     document.addEventListener('DOMContentLoaded', () => { loadProducts(); });
 
+    // ── Navigation ──
     function showPage(pageId) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
         document.getElementById('page-' + pageId).classList.remove('hidden');
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         document.getElementById('nav-' + pageId).classList.add('active');
-        if(pageId === 'report') loadReport();
+        if (pageId === 'report') loadReport();
     }
 
-    // --- Upload Logic ---
+    // ── Upload ──
     async function handleFileUpload(input) {
-        if(input.files && input.files[0]) {
-            const file = input.files[0];
+        if (input.files && input.files[0]) {
             const formData = new FormData();
-            formData.append('file', file);
-            
+            formData.append('file', input.files[0]);
             document.getElementById('upload-status').classList.remove('hidden');
             document.getElementById('btn-save-prod').disabled = true;
-
             try {
                 const res = await fetch('/api/v1/upload/', { method: 'POST', body: formData });
                 const data = await res.json();
-                
-                if(data.status === 'ok') {
+                if (data.status === 'ok') {
                     document.getElementById('uploaded-url').value = data.url;
                     document.getElementById('img-preview').src = data.url;
                     document.getElementById('img-preview').classList.remove('hidden');
@@ -176,7 +339,7 @@
         }
     }
 
-    // --- Product Logic ---
+    // ── Products ──
     async function loadProducts() {
         const res = await fetch(`/api/v1/product/list/${MERCHANT_ID}`);
         products = await res.json();
@@ -186,76 +349,96 @@
 
     function renderProductGrid(data) {
         document.getElementById('product-grid').innerHTML = data.map(p => `
-            <div class="col-md-4 col-lg-3"><div class="product-card h-100" onclick="addToCart('${p.id}')">
-                <div class="product-img-wrapper">${p.image_url ? `<img src="${p.image_url}" class="product-img">` : '<i class="fa-solid fa-box text-secondary fa-2x"></i>'}</div>
-                <div class="p-3 text-center"><div class="fw-bold text-truncate">${p.name}</div><div class="text-primary fw-bold">฿ ${p.price}</div></div>
-            </div></div>`).join('');
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="product-card h-100" onclick="addToCart('${p.id}')">
+                    <div class="product-img-wrapper">${p.image_url ? `<img src="${p.image_url}" class="product-img">` : '<i class="fa-solid fa-box text-secondary fa-2x"></i>'}</div>
+                    <div class="p-3 text-center"><div class="fw-bold text-truncate" style="font-size:0.9rem">${p.name}</div><div class="text-primary fw-bold mt-1">฿ ${p.price}</div></div>
+                </div>
+            </div>`).join('');
     }
 
     function renderProductTable() {
         document.getElementById('product-table-body').innerHTML = products.map(p => `
-            <tr><td><img src="${p.image_url || ''}" width="40" height="40" class="rounded object-fit-cover"></td>
-            <td class="fw-bold">${p.name}</td><td>${p.price}</td><td class="text-muted">${p.cost_price}</td>
-            <td><button class="btn btn-sm btn-light text-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+            <tr>
+                <td class="ps-4"><img src="${p.image_url || ''}" width="40" height="40" class="rounded" style="object-fit:cover"></td>
+                <td class="fw-bold">${p.name}</td>
+                <td class="text-primary fw-bold">฿ ${p.price}</td>
+                <td class="text-muted">฿ ${p.cost_price}</td>
+                <td><button class="btn btn-sm btn-light text-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`).join('');
     }
 
     async function saveProduct() {
         const name = document.getElementById('new-name').value;
         const price = document.getElementById('new-price').value;
         const cost = document.getElementById('new-cost').value;
-        const image = document.getElementById('uploaded-url').value; // ใช้ URL ที่ได้จากการอัปโหลด
-
-        if(!name || !price) return alert("กรอกข้อมูลให้ครบ");
-
+        const image = document.getElementById('uploaded-url').value;
+        if (!name || !price) return alert("กรอกข้อมูลให้ครบ");
         await fetch('/api/v1/product/add', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ merchant_id: MERCHANT_ID, name, price: parseFloat(price), cost_price: parseFloat(cost||0), image_url: image })
         });
         addModal.hide(); loadProducts();
     }
-    
-    function openAddModal() { 
-        document.getElementById('new-name').value = '';
-        document.getElementById('new-price').value = '';
-        document.getElementById('new-file').value = ''; 
+
+    function openAddModal() {
+        ['new-name','new-price','new-cost'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('new-file').value = '';
         document.getElementById('uploaded-url').value = '';
         document.getElementById('img-preview').classList.add('hidden');
-        addModal.show(); 
+        addModal.show();
     }
-    
-    async function deleteProduct(id) { if(confirm("ลบสินค้า?")) { await fetch(`/api/v1/product/delete/${id}`, {method: 'DELETE'}); loadProducts(); } }
 
-    // --- Cart Logic (ย่อ) ---
+    async function deleteProduct(id) {
+        if (confirm("ลบสินค้า?")) { await fetch(`/api/v1/product/delete/${id}`, {method: 'DELETE'}); loadProducts(); }
+    }
+
+    function searchProduct(query) {
+        const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+        renderProductGrid(filtered);
+    }
+
+    // ── Cart ──
     function addToCart(pid) {
         const p = products.find(x => x.id === pid);
         const exist = cart.find(x => x.product_id === pid);
         exist ? exist.quantity++ : cart.push({...p, product_id: pid, quantity: 1, cost: p.cost_price});
         renderCart();
     }
+
     function renderCart() {
         const con = document.getElementById('cart-items-container');
-        if(!cart.length) { con.innerHTML = '<div class="text-center text-muted mt-5">ยังไม่มีสินค้า</div>'; document.getElementById('cart-count').innerText=0; document.getElementById('cart-total').innerText='฿ 0'; return;}
+        if (!cart.length) {
+            con.innerHTML = '<div class="text-center text-muted mt-5" style="font-size:0.85rem">ยังไม่มีสินค้า</div>';
+            document.getElementById('cart-count').innerText = 0;
+            document.getElementById('cart-total').innerText = '฿ 0';
+            return;
+        }
         let total = 0, count = 0;
         con.innerHTML = cart.map((i, idx) => {
             total += i.price * i.quantity; count += i.quantity;
-            return `<div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                <div><div class="fw-bold">${i.name}</div><div class="small text-muted">${i.price} x ${i.quantity}</div></div>
-                <div class="text-end fw-bold">฿ ${i.price*i.quantity} <i class="fa-solid fa-minus-circle text-danger ms-2" style="cursor:pointer" onclick="removeFromCart(${idx})"></i></div>
+            return `<div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                <div><div class="fw-bold" style="font-size:0.9rem">${i.name}</div><div class="small text-muted">฿${i.price} × ${i.quantity}</div></div>
+                <div class="text-end"><div class="fw-bold text-dark">฿${i.price * i.quantity}</div>
+                <i class="fa-solid fa-minus-circle text-danger" style="cursor:pointer;font-size:0.9rem" onclick="removeFromCart(${idx})"></i></div>
             </div>`;
         }).join('');
         document.getElementById('cart-total').innerText = `฿ ${total.toLocaleString()}`;
         document.getElementById('cart-count').innerText = count;
     }
+
     function removeFromCart(idx) { cart[idx].quantity > 1 ? cart[idx].quantity-- : cart.splice(idx, 1); renderCart(); }
     function clearCart() { cart = []; renderCart(); }
 
     async function checkout() {
-        if(!cart.length) return alert("เลือกสินค้าก่อน");
-        const total = cart.reduce((s, i) => s + (i.price*i.quantity), 0);
-        const res = await fetch('/api/v1/qr/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ merchant_id: MERCHANT_ID, items: cart, total_amount: total }) });
+        if (!cart.length) return alert("เลือกสินค้าก่อน");
+        const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        const res = await fetch('/api/v1/qr/generate', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ merchant_id: MERCHANT_ID, items: cart, total_amount: total })
+        });
         const data = await res.json();
-        if(data.status === 'ok') {
+        if (data.status === 'ok') {
             const liff = `https://liff.line.me/${LIFF_ID}?qr_id=${data.qr_id}`;
             document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liff)}`;
             document.getElementById('qr-total-display').innerText = `฿ ${total.toLocaleString()}`;
@@ -263,58 +446,204 @@
         }
     }
 
-    // --- Report / CRM Logic ---
+    // ════════════════════════════════
+    //  ANALYTICS / REPORT
+    // ════════════════════════════════
+
     async function loadReport() {
-        const tbody = document.getElementById('report-table-body');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>';
-        
+        // Reset
+        ['stat-revenue','stat-orders','stat-members','stat-walkin'].forEach(id => document.getElementById(id).innerText = '—');
+        document.getElementById('report-table-body').innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>กำลังโหลด...</td></tr>';
+
         try {
             const res = await fetch(`/api/v1/analytics/transactions/${MERCHANT_ID}`);
-            const data = await res.json();
-            
-            if(!data.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">ยังไม่มีรายการขาย</td></tr>';
-                return;
+            allTransactions = await res.json();
+
+            computeStats(allTransactions);
+            renderTopCustomers(allTransactions);
+            renderTopProducts(allTransactions);
+            renderSalesChart(allTransactions, 'daily');
+            renderTransactionTable(allTransactions);
+
+        } catch(e) {
+            console.error(e);
+            document.getElementById('report-table-body').innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">เกิดข้อผิดพลาด</td></tr>';
+        }
+    }
+
+    // ── Stat Cards ──
+    function computeStats(txs) {
+        const total = txs.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+        const members = txs.filter(t => t.customer_name).length;
+        const walkin = txs.length - members;
+
+        document.getElementById('stat-revenue').innerText = `฿${total.toLocaleString()}`;
+        document.getElementById('stat-orders').innerText = txs.length.toLocaleString();
+        document.getElementById('stat-members').innerText = members.toLocaleString();
+        document.getElementById('stat-walkin').innerText = walkin.toLocaleString();
+    }
+
+    // ── Sales Chart ──
+    let currentChartMode = 'daily';
+
+    function switchChart(mode) {
+        currentChartMode = mode;
+        document.getElementById('btn-daily').classList.toggle('active', mode === 'daily');
+        document.getElementById('btn-monthly').classList.toggle('active', mode === 'monthly');
+        renderSalesChart(allTransactions, mode);
+    }
+
+    function renderSalesChart(txs, mode) {
+        const grouped = {};
+        txs.forEach(tx => {
+            const d = new Date(tx.created_at);
+            let key;
+            if (mode === 'daily') {
+                key = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' });
+            } else {
+                key = d.toLocaleDateString('th-TH', { month: 'short', year: '2-digit' });
             }
+            grouped[key] = (grouped[key] || 0) + parseFloat(tx.amount || 0);
+        });
 
-            tbody.innerHTML = data.map(tx => {
-                // Customer Info
-                let customerHtml = '<span class="text-muted small">ขาจร (ไม่สแกน)</span>';
-                if(tx.customer_name) {
-                    customerHtml = `
-                        <div class="d-flex align-items-center">
-                            <img src="${tx.customer_picture || 'https://via.placeholder.com/40'}" class="avatar-img me-2">
-                            <div>
-                                <div class="fw-bold text-dark">${tx.customer_name}</div>
-                                <div class="small text-success"><i class="fa-brands fa-line"></i> Member</div>
-                            </div>
-                        </div>`;
+        const labels = Object.keys(grouped).slice(-14);
+        const values = labels.map(k => grouped[k]);
+
+        if (salesChart) salesChart.destroy();
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 300);
+        grad.addColorStop(0, 'rgba(79,110,247,0.25)');
+        grad.addColorStop(1, 'rgba(79,110,247,0)');
+
+        salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'ยอดขาย (฿)',
+                    data: values,
+                    fill: true,
+                    backgroundColor: grad,
+                    borderColor: '#4f6ef7',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#4f6ef7',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ฿${ctx.raw.toLocaleString()}`
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#8a93a8' } },
+                    y: { grid: { color: '#f2f4fa' }, ticks: { font: { size: 11 }, color: '#8a93a8', callback: v => '฿' + v.toLocaleString() } }
                 }
+            }
+        });
+    }
 
-                // Items Info
-                const itemsHtml = tx.transaction_items.map(i => 
-                    `<div class="small text-muted">• ${i.products?.name || 'สินค้า'} x${i.quantity}</div>`
-                ).join('');
+    // ── Top Customers ──
+    function renderTopCustomers(txs) {
+        const map = {};
+        txs.filter(t => t.customer_name).forEach(t => {
+            const key = t.customer_name;
+            if (!map[key]) map[key] = { name: key, picture: t.customer_picture, total: 0, count: 0 };
+            map[key].total += parseFloat(t.amount || 0);
+            map[key].count++;
+        });
 
-                // Status Badge
-                const statusBadge = tx.status === 'claimed' 
-                    ? '<span class="badge bg-success badge-status">สมาชิกสะสมแล้ว</span>'
-                    : '<span class="badge bg-secondary badge-status">รอสแกน / ขาจร</span>';
-                
-                // Time
-                const time = new Date(tx.created_at).toLocaleString('th-TH');
+        const sorted = Object.values(map).sort((a, b) => b.total - a.total).slice(0, 7);
+        const maxTotal = sorted[0]?.total || 1;
+        const rankClass = ['gold','silver','bronze'];
 
-                return `
-                <tr>
-                    <td><small class="text-muted">${time}</small></td>
-                    <td>${customerHtml}</td>
-                    <td>${itemsHtml || '-'}</td>
-                    <td class="fw-bold">฿ ${tx.amount}</td>
-                    <td>${statusBadge}</td>
-                </tr>`;
-            }).join('');
+        const tbody = document.getElementById('top-customers-table').querySelector('tbody');
+        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4" style="font-size:0.85rem">ยังไม่มีสมาชิก</td></tr>'; return; }
 
-        } catch(e) { console.error(e); }
+        tbody.innerHTML = sorted.map((c, i) => `
+            <tr>
+                <td style="width:32px"><div class="rank-num ${rankClass[i] || ''}">${i+1}</div></td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="${c.picture || 'https://via.placeholder.com/36'}" class="avatar-img" style="width:32px;height:32px">
+                        <div>
+                            <div style="font-size:0.85rem;font-weight:600">${c.name}</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted)">${c.count} ออเดอร์</div>
+                            <div class="progress-bar-custom"><div class="progress-fill" style="width:${(c.total/maxTotal*100).toFixed(0)}%"></div></div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-end" style="font-size:0.85rem;font-weight:700;color:var(--accent)">฿${c.total.toLocaleString()}</td>
+            </tr>`).join('');
+    }
+
+    // ── Top Products ──
+    function renderTopProducts(txs) {
+        const map = {};
+        txs.forEach(t => {
+            (t.transaction_items || []).forEach(item => {
+                const name = item.products?.name || 'สินค้า';
+                if (!map[name]) map[name] = { name, qty: 0, revenue: 0 };
+                map[name].qty += item.quantity || 1;
+                map[name].revenue += (item.price || 0) * (item.quantity || 1);
+            });
+        });
+
+        const sorted = Object.values(map).sort((a, b) => b.qty - a.qty).slice(0, 7);
+        const maxQty = sorted[0]?.qty || 1;
+        const rankClass = ['gold','silver','bronze'];
+
+        const tbody = document.getElementById('top-products-table').querySelector('tbody');
+        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4" style="font-size:0.85rem">ยังไม่มีข้อมูล</td></tr>'; return; }
+
+        tbody.innerHTML = sorted.map((p, i) => `
+            <tr>
+                <td style="width:32px"><div class="rank-num ${rankClass[i] || ''}">${i+1}</div></td>
+                <td>
+                    <div style="font-size:0.85rem;font-weight:600">${p.name}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted)">${p.qty} ชิ้น</div>
+                    <div class="progress-bar-custom"><div class="progress-fill green" style="width:${(p.qty/maxQty*100).toFixed(0)}%"></div></div>
+                </td>
+                <td class="text-end" style="font-size:0.85rem;font-weight:700;color:var(--accent-2)">฿${p.revenue.toLocaleString()}</td>
+            </tr>`).join('');
+    }
+
+    // ── Transaction Table ──
+    function renderTransactionTable(txs) {
+        const tbody = document.getElementById('report-table-body');
+        if (!txs.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-5">ยังไม่มีรายการขาย</td></tr>'; return; }
+
+        tbody.innerHTML = txs.map(tx => {
+            let customerHtml = '<span style="font-size:0.82rem;color:var(--text-muted)">ขาจร (ไม่สแกน)</span>';
+            if (tx.customer_name) {
+                customerHtml = `<div class="d-flex align-items-center gap-2">
+                    <img src="${tx.customer_picture || 'https://via.placeholder.com/36'}" class="avatar-img" style="width:34px;height:34px">
+                    <div>
+                        <div style="font-size:0.85rem;font-weight:600">${tx.customer_name}</div>
+                        <div style="font-size:0.75rem;color:#0faa7e"><i class="fa-brands fa-line"></i> Member</div>
+                    </div>
+                </div>`;
+            }
+            const itemsHtml = (tx.transaction_items || []).map(i => `<span style="font-size:0.78rem;color:var(--text-muted);display:block">• ${i.products?.name || 'สินค้า'} ×${i.quantity}</span>`).join('');
+            const badge = tx.status === 'claimed' ? '<span class="badge-claimed">สะสมแล้ว</span>' : '<span class="badge-pending">รอสแกน</span>';
+            const time = new Date(tx.created_at).toLocaleString('th-TH', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+
+            return `<tr>
+                <td style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap">${time}</td>
+                <td>${customerHtml}</td>
+                <td>${itemsHtml || '—'}</td>
+                <td style="font-weight:700;white-space:nowrap">฿ ${parseFloat(tx.amount).toLocaleString()}</td>
+                <td>${badge}</td>
+            </tr>`;
+        }).join('');
     }
 </script>
 </body>

@@ -5,7 +5,6 @@ from app.database import supabase
 
 router = APIRouter()
 
-# ... (ส่วน CartItem และ GenerateQRRequest เหมือนเดิม ไม่ต้องแก้) ...
 class CartItem(BaseModel):
     product_id: str
     name: str
@@ -22,7 +21,6 @@ class GenerateQRRequest(BaseModel):
 @router.post("/generate")
 async def generate_qr(data: GenerateQRRequest):
     try:
-        # สร้าง Transaction (เหมือนเดิม)
         tx_res = supabase.table("member_transactions").insert({
             "merchant_id": data.merchant_id,
             "amount": data.total_amount,
@@ -46,23 +44,24 @@ async def generate_qr(data: GenerateQRRequest):
         if items_data:
             supabase.table("transaction_items").insert(items_data).execute()
         
+        receipt_id = "RCP-" + tx_id[:8].upper()
         supabase.table("member_transactions").update({
-            "receipt_id": "RCP-" + tx_id[:8].upper()
+            "receipt_id": receipt_id
         }).eq("id", tx_id).execute()
 
-        return {"status": "ok", "qr_id": tx_id}
+        return {"status": "ok", "qr_id": tx_id, "receipt_id": receipt_id}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 # ---------------------------------------------------------
-# 🔥 ส่วนที่แก้ใหม่: รับข้อมูล Profile ลูกค้าด้วย
+# 🔥 ส่วนที่แก้ใหม่: แก้ไขระบบอัปเดตสมาชิกให้ปลอดภัยขึ้น
 # ---------------------------------------------------------
 class ClaimPointRequest(BaseModel):
     line_user_id: str
     qr_id: str
-    display_name: str  # เพิ่ม
-    picture_url: str   # เพิ่ม
+    display_name: str
+    picture_url: str
 
 @router.post("/claim")
 async def claim_point(data: ClaimPointRequest):
@@ -75,24 +74,33 @@ async def claim_point(data: ClaimPointRequest):
         # 2. เช็คสิทธิ์
         if record['status'] == 'claimed' or record['line_user_id'] is not None:
             if record['line_user_id'] == data.line_user_id:
-                 return {"status": "error", "message": "สะสมไปแล้วครับ"}
+                 return {"status": "error", "message": "คุณสะสมยอดนี้ไปแล้วครับ"}
             else:
                  return {"status": "error", "message": "รายการนี้ถูกใช้สิทธิ์ไปแล้ว"}
 
-        # 3. อัปเดต/สร้างข้อมูลสมาชิก (CRM)
-        # ใช้ upsert เพื่อเก็บข้อมูลล่าสุดของลูกค้าคนนี้เสมอ
-        supabase.table("members").upsert({
-            "merchant_id": record['merchant_id'],
-            "line_user_id": data.line_user_id,
-            "display_name": data.display_name,
-            "picture_url": data.picture_url
-        }, on_conflict="merchant_id, line_user_id").execute()
+        # 3. 🟢 แก้บัค: อัปเดต/สร้างข้อมูลสมาชิกแบบเซฟๆ (แทนการใช้ Upsert ที่ชอบบัค)
+        member_check = supabase.table("members").select("id").eq("merchant_id", record['merchant_id']).eq("line_user_id", data.line_user_id).execute()
+        
+        if member_check.data:
+            # ถ้ามีประวัติอยู่แล้ว ให้อัปเดตชื่อกับรูป
+            supabase.table("members").update({
+                "display_name": data.display_name,
+                "picture_url": data.picture_url
+            }).eq("id", member_check.data[0]['id']).execute()
+        else:
+            # ถ้าเป็นลูกค้าใหม่ ให้สร้าง Record ใหม่
+            supabase.table("members").insert({
+                "merchant_id": record['merchant_id'],
+                "line_user_id": data.line_user_id,
+                "display_name": data.display_name,
+                "picture_url": data.picture_url
+            }).execute()
 
-        # 4. บันทึกความเป็นเจ้าของบิล (พร้อมชื่อแปะในบิลเลย ดูง่ายตอนทำ report)
+        # 4. บันทึกความเป็นเจ้าของบิล
         supabase.table("member_transactions").update({
             "line_user_id": data.line_user_id,
-            "customer_name": data.display_name,   # บันทึกชื่อ
-            "customer_picture": data.picture_url, # บันทึกรูป
+            "customer_name": data.display_name,
+            "customer_picture": data.picture_url,
             "status": "claimed"
         }).eq("id", data.qr_id).execute()
 
