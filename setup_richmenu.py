@@ -20,7 +20,7 @@ if not CHANNEL_ACCESS_TOKEN:
 # 2. CONFIGURATION 
 # ==========================================
 # Replace this with your actual LIFF URL
-LIFF_URL = os.getenv("LIFE_URL") 
+LIFF_URL = os.getenv("LIFF_URL")
 
 # Make sure you have an image named exactly this in the same folder
 IMAGE_PATH = "richmenu_image.jpg" 
@@ -52,7 +52,7 @@ rich_menu_data = {
         },
         {
             "bounds": {"x": 1250, "y": 843, "width": 1250, "height": 843},
-            "action": {"type": "message", "text": "โปรโมชั่น"}
+            "action": {"type": "message", "text": "เวลาทำการ"}
         }
     ]
 }
