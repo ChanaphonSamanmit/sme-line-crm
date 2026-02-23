@@ -49,7 +49,7 @@ def handle_message(event):
             text=reply_msg,
             quick_reply=QuickReply(items=[
                 QuickReplyButton(action=MessageAction(label="เช็คแต้ม", text="เช็คแต้ม")),
-                QuickReplyButton(action=MessageAction(label="โปรโมชั่น", text="โปรโมชั่น"))
+                QuickReplyButton(action=MessageAction(label="เวลาทำการ", text="เวลาทำการ"))
             ])
         )
     )
