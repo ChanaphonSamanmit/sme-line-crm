@@ -54,9 +54,6 @@ async def generate_qr(data: GenerateQRRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ---------------------------------------------------------
-# 🔥 ส่วนที่แก้ใหม่: แก้ไขระบบอัปเดตสมาชิกให้ปลอดภัยขึ้น
-# ---------------------------------------------------------
 class ClaimPointRequest(BaseModel):
     line_user_id: str
     qr_id: str

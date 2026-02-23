@@ -130,7 +130,7 @@
     <div class="sidebar-logo">
         <div class="d-flex align-items-center gap-2">
             <div style="width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">🚀</div>
-            <span class="fw-bold text-white" style="font-size:1.05rem;">POS Pro V2</span>
+            <span class="fw-bold text-white" style="font-size:1.05rem;">POS & CRM</span>
         </div>
     </div>
     <div class="p-2 mt-2">
@@ -274,8 +274,8 @@
         <div class="modal-body">
             <input type="text" id="new-name" class="form-control mb-2" placeholder="ชื่อสินค้า">
             <div class="row g-2 mb-2">
-                <div class="col"><input type="number" id="new-price" class="form-control" placeholder="ราคาขาย"></div>
-                <div class="col"><input type="number" id="new-cost" class="form-control" placeholder="ต้นทุน"></div>
+                <div class="col"><input type="text" id="new-price" class="form-control" placeholder="ราคาขาย" oninput="formatNumber(this)"></div>
+                <div class="col"><input type="text" id="new-cost" class="form-control" placeholder="ต้นทุน" oninput="formatNumber(this)"></div>
             </div>
             <label class="form-label small text-muted">รูปสินค้า</label>
             <input type="file" id="new-file" class="form-control" accept="image/*" onchange="handleFileUpload(this)">
@@ -306,6 +306,21 @@
     let addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
 
     document.addEventListener('DOMContentLoaded', () => { loadProducts(); });
+
+    // ── Number Formatting ──
+    function formatNumber(input) {
+        // ลบตัวอักษรที่ไม่ใช่ตัวเลขและจุดทิ้งไป
+        let value = input.value.replace(/[^\d.]/g, '');
+        
+        // แยกส่วนจำนวนเต็มและทศนิยม (ถ้ามี)
+        let parts = value.split('.');
+        
+        // ใส่คอมม่าให้ส่วนจำนวนเต็ม
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        // เอามาประกอบกันใหม่
+        input.value = parts.join('.');
+    }
 
     // ── Navigation ──
     function showPage(pageId) {
@@ -352,7 +367,7 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <div class="product-card h-100" onclick="addToCart('${p.id}')">
                     <div class="product-img-wrapper">${p.image_url ? `<img src="${p.image_url}" class="product-img">` : '<i class="fa-solid fa-box text-secondary fa-2x"></i>'}</div>
-                    <div class="p-3 text-center"><div class="fw-bold text-truncate" style="font-size:0.9rem">${p.name}</div><div class="text-primary fw-bold mt-1">฿ ${p.price}</div></div>
+                    <div class="p-3 text-center"><div class="fw-bold text-truncate" style="font-size:0.9rem">${p.name}</div><div class="text-primary fw-bold mt-1">฿ ${p.price.toLocaleString()}</div></div>
                 </div>
             </div>`).join('');
     }
@@ -362,21 +377,28 @@
             <tr>
                 <td class="ps-4"><img src="${p.image_url || ''}" width="40" height="40" class="rounded" style="object-fit:cover"></td>
                 <td class="fw-bold">${p.name}</td>
-                <td class="text-primary fw-bold">฿ ${p.price}</td>
-                <td class="text-muted">฿ ${p.cost_price}</td>
+                <td class="text-primary fw-bold">฿ ${p.price.toLocaleString()}</td>
+                <td class="text-muted">฿ ${p.cost_price.toLocaleString()}</td>
                 <td><button class="btn btn-sm btn-light text-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`).join('');
     }
 
     async function saveProduct() {
         const name = document.getElementById('new-name').value;
-        const price = document.getElementById('new-price').value;
-        const cost = document.getElementById('new-cost').value;
+        
+        // เอาลูกน้ำ (,) ออกก่อนนำไปแปลงเป็นตัวเลข
+        const priceRaw = document.getElementById('new-price').value.replace(/,/g, '');
+        const costRaw = document.getElementById('new-cost').value.replace(/,/g, '');
+        
+        const price = parseFloat(priceRaw);
+        const cost = parseFloat(costRaw || 0);
         const image = document.getElementById('uploaded-url').value;
-        if (!name || !price) return alert("กรอกข้อมูลให้ครบ");
+
+        if (!name || isNaN(price)) return alert("กรอกข้อมูลให้ครบและถูกต้อง");
+        
         await fetch('/api/v1/product/add', {
             method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ merchant_id: MERCHANT_ID, name, price: parseFloat(price), cost_price: parseFloat(cost||0), image_url: image })
+            body: JSON.stringify({ merchant_id: MERCHANT_ID, name, price: price, cost_price: cost, image_url: image })
         });
         addModal.hide(); loadProducts();
     }
@@ -418,8 +440,8 @@
         con.innerHTML = cart.map((i, idx) => {
             total += i.price * i.quantity; count += i.quantity;
             return `<div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
-                <div><div class="fw-bold" style="font-size:0.9rem">${i.name}</div><div class="small text-muted">฿${i.price} × ${i.quantity}</div></div>
-                <div class="text-end"><div class="fw-bold text-dark">฿${i.price * i.quantity}</div>
+                <div><div class="fw-bold" style="font-size:0.9rem">${i.name}</div><div class="small text-muted">฿${i.price.toLocaleString()} × ${i.quantity}</div></div>
+                <div class="text-end"><div class="fw-bold text-dark">฿${(i.price * i.quantity).toLocaleString()}</div>
                 <i class="fa-solid fa-minus-circle text-danger" style="cursor:pointer;font-size:0.9rem" onclick="removeFromCart(${idx})"></i></div>
             </div>`;
         }).join('');
@@ -591,9 +613,9 @@
         txs.forEach(t => {
             (t.transaction_items || []).forEach(item => {
                 const name = item.products?.name || 'สินค้า';
-                if (!map[name]) map[name] = { name, qty: 0, revenue: 0 };
+                // ลบ revenue ออก เหลือแค่เก็บจำนวน (qty)
+                if (!map[name]) map[name] = { name, qty: 0 };
                 map[name].qty += item.quantity || 1;
-                map[name].revenue += (item.price || 0) * (item.quantity || 1);
             });
         });
 
@@ -602,17 +624,17 @@
         const rankClass = ['gold','silver','bronze'];
 
         const tbody = document.getElementById('top-products-table').querySelector('tbody');
-        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4" style="font-size:0.85rem">ยังไม่มีข้อมูล</td></tr>'; return; }
+        // ปรับ colspan เป็น 2 เพราะเราลบคอลัมน์รายได้ออกไป 1 อัน
+        if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-4" style="font-size:0.85rem">ยังไม่มีข้อมูล</td></tr>'; return; }
 
         tbody.innerHTML = sorted.map((p, i) => `
             <tr>
-                <td style="width:32px"><div class="rank-num ${rankClass[i] || ''}">${i+1}</div></td>
+                <td style="width:32px; padding-right:10px;"><div class="rank-num ${rankClass[i] || ''}">${i+1}</div></td>
                 <td>
                     <div style="font-size:0.85rem;font-weight:600">${p.name}</div>
-                    <div style="font-size:0.75rem;color:var(--text-muted)">${p.qty} ชิ้น</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted)">ขายได้ ${p.qty.toLocaleString()} ชิ้น</div>
                     <div class="progress-bar-custom"><div class="progress-fill green" style="width:${(p.qty/maxQty*100).toFixed(0)}%"></div></div>
                 </td>
-                <td class="text-end" style="font-size:0.85rem;font-weight:700;color:var(--accent-2)">฿${p.revenue.toLocaleString()}</td>
             </tr>`).join('');
     }
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response # <--- เพิ่ม Response ตรงนี้
+from fastapi import FastAPI, Response 
 from fastapi.staticfiles import StaticFiles
 from app.routers import line_bot, analytics, qr_point, product, upload
 
