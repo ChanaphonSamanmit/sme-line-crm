@@ -55,7 +55,7 @@ async def update_product(product_id: str, data: ProductUpdate):
  
 @router.delete("/delete/{product_id}")
 async def delete_product(product_id: str):
-    """Soft Delete ไม่ลบจริง เพื่อรักษาประวัติการขาย"""
+    """Soft Delete — ไม่ลบจริง เพื่อรักษาประวัติการขาย"""
     try:
         supabase.table("products").update({"is_active": False}).eq("id", product_id).execute()
         return {"status": "ok"}

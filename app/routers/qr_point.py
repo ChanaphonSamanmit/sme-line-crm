@@ -1,22 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
 from app.database import supabase
+from app.models import CartItem, GenerateQRRequest, ClaimPointRequest
+
 
 router = APIRouter()
 
-class CartItem(BaseModel):
-    product_id: str
-    name: str
-    price: float
-    cost: float
-    quantity: int
-
-class GenerateQRRequest(BaseModel):
-    merchant_id: str
-    items: List[CartItem]
-    total_amount: float
-    discount: float = 0
 
 @router.post("/generate")
 async def generate_qr(data: GenerateQRRequest):
@@ -30,6 +18,7 @@ async def generate_qr(data: GenerateQRRequest):
         }).execute()
         
         tx_id = tx_res.data[0]['id']
+
 
         items_data = []
         for item in data.items:
@@ -49,16 +38,13 @@ async def generate_qr(data: GenerateQRRequest):
             "receipt_id": receipt_id
         }).eq("id", tx_id).execute()
 
+
         return {"status": "ok", "qr_id": tx_id, "receipt_id": receipt_id}
+
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-class ClaimPointRequest(BaseModel):
-    line_user_id: str
-    qr_id: str
-    display_name: str
-    picture_url: str
 
 @router.post("/claim")
 async def claim_point(data: ClaimPointRequest):
@@ -74,6 +60,7 @@ async def claim_point(data: ClaimPointRequest):
                  return {"status": "error", "message": "คุณสะสมยอดนี้ไปแล้วครับ"}
             else:
                  return {"status": "error", "message": "รายการนี้ถูกใช้สิทธิ์ไปแล้ว"}
+
 
         # 3. 🟢 แก้บัค: อัปเดต/สร้างข้อมูลสมาชิกแบบเซฟๆ (แทนการใช้ Upsert ที่ชอบบัค)
         member_check = supabase.table("members").select("id").eq("merchant_id", record['merchant_id']).eq("line_user_id", data.line_user_id).execute()
@@ -93,6 +80,7 @@ async def claim_point(data: ClaimPointRequest):
                 "picture_url": data.picture_url
             }).execute()
 
+
         # 4. บันทึกความเป็นเจ้าของบิล
         supabase.table("member_transactions").update({
             "line_user_id": data.line_user_id,
@@ -100,6 +88,7 @@ async def claim_point(data: ClaimPointRequest):
             "customer_picture": data.picture_url,
             "status": "claimed"
         }).eq("id", data.qr_id).execute()
+
 
         return {"status": "success", "amount": record['amount'], "message": f"ขอบคุณครับคุณ {data.display_name}!"}
     except Exception as e:
