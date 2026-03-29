@@ -20,17 +20,9 @@ if not CHANNEL_ACCESS_TOKEN:
 # 2. CONFIGURATION 
 # ==========================================
 # Replace this with your actual LIFF URL
-<<<<<<< HEAD
-LIFF_URL = "https://liff.line.me/2009142385-rGVgyn7a"
+LIFF_URL = os.getenv("LIFF_URL", "https://liff.line.me/YOUR_LIFF_ID")
+IMAGE_PATH = "richmenu_image.jpg"
 
-# Make sure you have an image named exactly this in the same folder
-IMAGE_PATH = "richmenu_image.png" 
-=======
-LIFF_URL = os.getenv("LIFF_URL")
-
-# Make sure you have an image named exactly this in the same folder
-IMAGE_PATH = "richmenu_image.jpg" 
->>>>>>> d434d997d3fb45e82604498a33a053a7d002bd97
 
 HEADERS = {
     "Authorization": f"Bearer {CHANNEL_ACCESS_TOKEN}",

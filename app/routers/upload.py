@@ -1,4 +1,4 @@
-  app/routers/upload.py
+# app/routers/upload.py
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.database import supabase
 import uuid
