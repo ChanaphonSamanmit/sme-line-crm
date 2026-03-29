@@ -1,7 +1,6 @@
 fastapi
-uvicorn[standard]
+uvicorn
 python-dotenv
-pydantic-settings
 requests
 line-bot-sdk
 supabase
