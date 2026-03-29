@@ -29,6 +29,10 @@ SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 LINE_CHANNEL_ACCESS_TOKEN=your_messaging_api_token
 LINE_CHANNEL_SECRET=your_messaging_api_secret
+<<<<<<< HEAD
+=======
+LIFF_URL=your_liff_url
+>>>>>>> d434d997d3fb45e82604498a33a053a7d002bd97
 ```
 
 **3. Start the FastAPI Server:**
