@@ -93,3 +93,21 @@ async def claim_point(data: ClaimPointRequest):
         return {"status": "success", "amount": record['amount'], "message": f"ขอบคุณครับคุณ {data.display_name}!"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@router.get("/info/{qr_id}")
+async def get_qr_info(qr_id: str):
+    try:
+        res = supabase.table("member_transactions") \
+            .select("id, amount, receipt_id, status") \
+            .eq("id", qr_id) \
+            .execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="ไม่พบรายการ")
+        row = res.data[0]
+        if row["status"] == "claimed":
+            raise HTTPException(status_code=410, detail="รายการนี้ถูกสแกนไปแล้ว")
+        return {"amount": row["amount"], "receipt_id": row["receipt_id"]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

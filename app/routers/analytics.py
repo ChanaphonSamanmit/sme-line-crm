@@ -71,7 +71,7 @@ async def get_member_summary(line_user_id: str, merchant_id: str):
             .order("created_at", desc=True) \
             .execute()
  
-        total_spent    = sum(t["amount"] for t in txs.data)
+        total_spent = sum(float(t["amount"]) for t in txs.data)
         tx_count       = len(txs.data)
         first_purchase = txs.data[-1]["created_at"] if txs.data else None
  

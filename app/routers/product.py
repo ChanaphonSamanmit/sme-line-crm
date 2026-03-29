@@ -14,9 +14,11 @@ router = APIRouter()
 async def get_products(merchant_id: str):
     """ดึงรายการสินค้าที่ยังใช้งานอยู่"""
     try:
-        res  = supabase.table("products").select("*").eq("merchant_id", merchant_id).execute()
-        data = [p for p in res.data if str(p.get("is_active", "true")).lower() not in ("false", "0")]
-        return data
+        res = supabase.table("products").select("*") \
+            .eq("merchant_id", merchant_id) \
+            .eq("is_active", True) \
+            .execute()
+        return res.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
  
