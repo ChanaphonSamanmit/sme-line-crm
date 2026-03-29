@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>สะสมแต้ม — SME CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ── Loading Screen ── -->
+    <div id="screen-loading" class="screen">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p>กำลังโหลด...</p>
+        </div>
+    </div>
+
+    <!-- ── Error Screen ── -->
+    <div id="screen-error" class="screen hidden">
+        <div class="error-box">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>เกิดข้อผิดพลาด</h3>
+            <p id="error-msg">กรุณาเปิดใน LINE</p>
+            <button class="btn-line" onclick="location.reload()">ลองใหม่</button>
+        </div>
+    </div>
+
+    <!-- ── Claim Screen (QR scan) ── -->
+    <div id="screen-claim" class="screen hidden">
+        <div class="claim-card">
+            <div class="claim-avatar" id="claim-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="claim-name" id="claim-name">สวัสดี!</div>
+
+            <div class="bill-card">
+                <div class="bill-label">ยอดซื้อครั้งนี้</div>
+                <div class="bill-amount" id="claim-amount">฿ —</div>
+                <div class="bill-receipt" id="claim-receipt"></div>
+            </div>
+
+            <button class="btn-claim" id="btn-claim" onclick="claimPoints()">
+                <i class="fa-solid fa-star"></i> สะสมแต้มเลย!
+            </button>
+            <p class="hint-text">กดปุ่มเพื่อยืนยันการสะสมแต้ม</p>
+        </div>
+    </div>
+
+    <!-- ── Success Screen ── -->
+    <div id="screen-success" class="screen hidden">
+        <div class="success-card">
+            <div class="success-icon">✅</div>
+            <h2>สะสมแต้มสำเร็จ!</h2>
+            <p id="success-name" class="success-name"></p>
+
+            <div class="points-badge">
+                <i class="fa-solid fa-coins"></i>
+                <span id="success-points">+0 แต้ม</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-val" id="success-total-spent">฿0</div>
+                    <div class="stat-lbl">ยอดสะสมทั้งหมด</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="success-tx-count">0</div>
+                    <div class="stat-lbl">ครั้งที่ซื้อ</div>
+                </div>
+            </div>
+
+            <!-- ประวัติการซื้อ 5 รายการล่าสุด -->
+            <div class="history-box">
+                <div class="history-title">ประวัติล่าสุด</div>
+                <div id="history-list"></div>
+            </div>
+
+            <button class="btn-close-liff" onclick="closeLiff()">
+                <i class="fa-solid fa-xmark"></i> ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Profile-only Screen (เข้าผ่าน rich menu ไม่มี QR) ── -->
+    <div id="screen-profile" class="screen hidden">
+        <div class="profile-card">
+            <div class="profile-avatar" id="profile-avatar-img"></div>
+            <div class="profile-name" id="profile-name">-</div>
+            <div class="profile-tag">สมาชิก LINE</div>
+
+            <div class="stats-grid mt-3">
+                <div class="stat-item">
+                    <div class="stat-val" id="profile-total-spent">฿0</div>
+                    <div class="stat-lbl">ยอดสะสม</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="profile-points">0</div>
+                    <div class="stat-lbl">แต้มสะสม</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="profile-tx-count">0</div>
+                    <div class="stat-lbl">จำนวนครั้ง</div>
+                </div>
+            </div>
+
+            <div class="history-box mt-3">
+                <div class="history-title">ประวัติการซื้อ</div>
+                <div id="profile-history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
