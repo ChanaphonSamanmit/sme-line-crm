@@ -4,3 +4,4 @@ python-dotenv
 requests
 line-bot-sdk
 supabase
+pydantic-settings
