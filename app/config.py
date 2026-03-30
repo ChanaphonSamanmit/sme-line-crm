@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     LINE_CHANNEL_ACCESS_TOKEN: str
     LINE_CHANNEL_SECRET: str
     LIFF_URL: str = ""
+    LIFF_ID: str = ""
+    MERCHANT_ID: str = ""
 
 
     class Config:

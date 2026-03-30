@@ -1,7 +1,18 @@
-// ── Config 
-const MERCHANT_ID = "4980c176-a1ec-4771-a9fa-ce87320435c9"; // ใส่ merchant UUID จริง
-const API_BASE    = "";  
- 
+// ── Config ────────────────────────────────────
+const API_BASE = "";      // ← เพิ่ม: relative URL ใช้ได้เสมอไม่ว่า ngrok จะเปลี่ยน
+let MERCHANT_ID = "";
+let LIFF_ID = "";
+
+// ENTRY POINT — listener เดียว, รอ config ก่อน loadProducts()
+window.addEventListener("DOMContentLoaded", async () => {
+  const cfg = await fetch("/api/v1/config").then(r => r.json());
+  MERCHANT_ID = cfg.merchant_id;
+  LIFF_ID     = cfg.liff_id;
+  loadProducts();   // ← เรียกครั้งเดียวหลังได้ MERCHANT_ID จริง
+});
+
+
+
 // ── State 
 let products  = [];
 let cart      = [];   // [{ id, name, price, cost, quantity }]
@@ -417,9 +428,4 @@ function escAttr(str) {
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
     .replace(/'/g,"&#x27;");
 }
- 
-// ── Bootstrap 
-window.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
-});
  
