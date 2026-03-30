@@ -32,8 +32,8 @@ def handle_message(event):
         try:
             # ดึงข้อมูลประวัติการสะสมแต้ม
             txs = supabase.table("member_transactions").select("amount").eq("line_user_id", user_id).execute()
-            total_spent = sum(t['amount'] for t in txs.data)
-            points = int(total_spent / 100) # สมมติ 100 บาท = 1 แต้ม
+            total_spent = sum(float(t['amount']) for t in txs.data)
+            points = int(total_spent / 100)
             reply_msg = f"💰 ยอดซื้อสะสม: {total_spent:,.2f} บาท\n⭐ คะแนนของคุณ: {points} แต้ม"
         except:
             reply_msg = "ไม่สามารถดึงข้อมูลแต้มได้ในขณะนี้"

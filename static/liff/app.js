@@ -1,21 +1,18 @@
-/**
- * SME LINE CRM — LIFF Customer App
- * Author: Person 3 (LINE / LIFF Lead)
- * ──────────────────────────────────────────────
- * Flow 1: ลูกค้าสแกน QR  → /liff?qr_id=xxx → claim points
- * Flow 2: ลูกค้าเปิดผ่าน Rich Menu → /liff → ดูแต้มสะสม
- */
-
 // ── Config ────────────────────────────────────
-const LIFF_ID = "YOUR_LIFF_ID";   // ← เปลี่ยน LIFF ID จริงที่นี่
-const MERCHANT_ID = "00000000-0000-0000-0000-000000000001"; // ← เปลี่ยน merchant UUID
-const API_BASE = "";   // same-origin
+const API_BASE = "";
+let MERCHANT_ID = "";
+let LIFF_ID = "";
 
-// ══════════════════════════════════════════════
 // ENTRY POINT
-// ══════════════════════════════════════════════
+
 document.addEventListener("DOMContentLoaded", async () => {
     try {
+        // 1. ดึง config จาก backend ก่อน — ต้องได้ LIFF_ID จริงก่อนเรียก liff.init()
+        const cfg = await fetch("/api/v1/config").then(r => r.json());
+        MERCHANT_ID = cfg.merchant_id;
+        LIFF_ID     = cfg.liff_id;
+
+        // 2. init LIFF หลังได้ ID จริง
         await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
@@ -24,8 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const profile = await liff.getProfile();
-        const params = new URLSearchParams(window.location.search);
-        const qrId = params.get("qr_id");
+        const params  = new URLSearchParams(window.location.search);
+        const qrId    = params.get("qr_id");
 
         if (qrId) {
             await showClaimScreen(profile, qrId);
