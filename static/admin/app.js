@@ -300,7 +300,7 @@ function buildChart(txList, mode) {
     grouped[key] = (grouped[key] || 0) + parseFloat(tx.amount || 0);
   });
  
-  const labels = Object.keys(grouped).slice(-14);
+  const labels = Object.keys(grouped).slice(-14).reverse();
   const data   = labels.map(k => grouped[k]);
  
   salesChart = new Chart(ctx, {
