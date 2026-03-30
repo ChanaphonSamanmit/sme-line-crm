@@ -154,8 +154,8 @@ async function checkout() {
     document.getElementById("qr-img").src    = qrApi;
     document.getElementById("qr-amount").textContent = "฿ " + fmt(total);
  
-    new bootstrap.Modal(document.getElementById("qrModal")).show();
-  } catch (e) {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("qrModal")).show();
+    } catch (e) {
     alert("เกิดข้อผิดพลาด: " + e.message);
   }
 }
@@ -198,7 +198,7 @@ function openAddModal() {
   document.getElementById("img-preview").classList.add("hidden");
   document.getElementById("img-preview").src = "";
   document.getElementById("upload-status").classList.add("hidden");
-  new bootstrap.Modal(document.getElementById("addProductModal")).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById("addProductModal")).show();
 }
  
 async function saveProduct() {
