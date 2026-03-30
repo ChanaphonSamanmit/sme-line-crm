@@ -346,7 +346,7 @@ body {
 }
  
 /* ── Responsive ── */
-@media (max-width: 1280px) { .main-content { margin-right: 0; } .cart-panel { display: none; } }
+@media (max-width: 900px) { .main-content { margin-right: 0; } .cart-panel { display: none; } }
 @media (max-width: 768px) {
     .sidebar { width: 64px; }
     .sidebar-brand div:last-child, .nav-item span, .menu-section-label, .sidebar-status span { display: none; }

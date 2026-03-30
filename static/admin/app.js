@@ -1,16 +1,16 @@
-// ── Config ────────────────────────────────────
+// ── Config 
 const MERCHANT_ID = "4980c176-a1ec-4771-a9fa-ce87320435c9"; // ใส่ merchant UUID จริง
 const API_BASE    = "";  
  
-// ── State ─────────────────────────────────────
+// ── State 
 let products  = [];
 let cart      = [];   // [{ id, name, price, cost, quantity }]
 let salesChart = null;
 let allTx      = [];
  
-// ══════════════════════════════════════════════
+
 // PAGE NAVIGATION
-// ══════════════════════════════════════════════
+
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
@@ -21,9 +21,9 @@ function showPage(name) {
   if (name === "report")   loadReport();
 }
  
-// ══════════════════════════════════════════════
+
 // PRODUCTS — POS GRID
-// ══════════════════════════════════════════════
+
 async function loadProducts() {
   try {
     const res  = await fetch(`${API_BASE}/api/v1/product/list/${MERCHANT_ID}`);
@@ -42,7 +42,7 @@ function renderGrid(list) {
   }
   grid.innerHTML = list.map(p => `
     <div class="col-6 col-md-4 col-xl-3">
-      <div class="product-card" onclick="addToCart('${p.id}','${escHtml(p.name)}',${p.price},${p.cost_price||0})">
+      <div class="product-card" onclick="addToCart('${p.id}','${escAttr(p.name)}',${p.price},${p.cost_price||0})">
         <div class="product-img">
           ${p.image_url
             ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.name)}" loading="lazy">`
@@ -61,9 +61,9 @@ function searchProduct(q) {
   renderGrid(filtered);
 }
  
-// ══════════════════════════════════════════════
+
 // CART
-// ══════════════════════════════════════════════
+
 function addToCart(id, name, price, cost) {
   const existing = cart.find(c => c.id === id);
   if (existing) {
@@ -107,9 +107,9 @@ function renderCart() {
     </div>`).join("");
 }
  
-// ══════════════════════════════════════════════
+
 // CHECKOUT — สร้าง QR
-// ══════════════════════════════════════════════
+
 async function checkout() {
   if (!cart.length) return alert("กรุณาเพิ่มสินค้าก่อนชำระเงิน");
  
@@ -149,9 +149,9 @@ async function checkout() {
   }
 }
  
-// ══════════════════════════════════════════════
+
 // PRODUCT MANAGEMENT — คลังสินค้า
-// ══════════════════════════════════════════════
+
 async function loadProductTable() {
   try {
     const res   = await fetch(`${API_BASE}/api/v1/product/list/${MERCHANT_ID}`);
@@ -230,7 +230,7 @@ async function deleteProduct(id) {
   loadProducts();
 }
  
-// ── อัปโหลดรูปสินค้า ─────────────────────────
+// ── อัปโหลดรูปสินค้า 
 async function handleUpload(input) {
   if (!input.files[0]) return;
   const status = document.getElementById("upload-status");
@@ -255,15 +255,15 @@ async function handleUpload(input) {
   }
 }
  
-// ── Format ตัวเลขขณะพิมพ์ ─────────────────────
+// ── Format ตัวเลขขณะพิมพ์
 function fmtNum(input) {
   const raw = input.value.replace(/[^0-9.]/g, "");
   input.value = raw;
 }
  
-// ══════════════════════════════════════════════
+
 // REPORT & ANALYTICS
-// ══════════════════════════════════════════════
+
 async function loadReport() {
   try {
     const [summary, txRes] = await Promise.all([
@@ -402,17 +402,23 @@ function renderTxTable(txList) {
     </tr>`).join("") || `<tr><td colspan="5" class="empty-row">ยังไม่มีรายการขาย</td></tr>`;
 }
  
-// ══════════════════════════════════════════════
+
 // UTILITIES
-// ══════════════════════════════════════════════
+
 function fmt(n) {
   return parseFloat(n || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function escHtml(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+function escAttr(str) {
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#x27;");
+}
  
-// ── Bootstrap ─────────────────────────────────
+// ── Bootstrap 
 window.addEventListener("DOMContentLoaded", () => {
   loadProducts();
 });
