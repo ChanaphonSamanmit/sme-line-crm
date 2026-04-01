@@ -19,11 +19,22 @@ app.include_router(analytics.router, prefix="/api/v1/analytics")
 
 @app.get("/admin")
 async def admin_page():
-    return FileResponse(os.path.join(_ROOT, "public/static/admin/index.html"))
+    p = os.path.join(_ROOT, "public/static/admin/index.html")
+    if not os.path.exists(p):
+        # Debug: list what IS in the bundle
+        files = []
+        for root, dirs, filenames in os.walk(_ROOT):
+            for f in filenames[:5]:
+                files.append(os.path.relpath(os.path.join(root, f), _ROOT))
+        return {"error": "file not found", "tried": p, "root": _ROOT, "sample_files": files[:20]}
+    return FileResponse(p)
 
 @app.get("/liff")
 async def liff_page():
-    return FileResponse(os.path.join(_ROOT, "public/static/liff/index.html"))
+    p = os.path.join(_ROOT, "public/static/liff/index.html")
+    if not os.path.exists(p):
+        return {"error": "file not found", "tried": p}
+    return FileResponse(p)
 
 @app.get("/")
 def health_check():
