@@ -4,13 +4,11 @@
       "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
-        "includeFiles": ["app/**"]
+        "includeFiles": ["app/**", "public/static/**"]
       }
     }
   ],
   "routes": [
-    { "src": "/admin", "dest": "/static/admin/index.html" },
-    { "src": "/liff",  "dest": "/static/liff/index.html" },
-    { "src": "/(.*)",  "dest": "/api/index.py" }
+    { "src": "/(.*)", "dest": "/api/index.py" }
   ]
 }

@@ -1,9 +1,11 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
 
 from fastapi import FastAPI, Response
+from fastapi.responses import FileResponse
 from app.routers import line_bot, analytics, qr_point, product, upload
 from app.config import settings
 
@@ -14,6 +16,14 @@ app.include_router(qr_point.router,  prefix="/api/v1/qr")
 app.include_router(product.router,   prefix="/api/v1/product")
 app.include_router(upload.router,    prefix="/api/v1/upload")
 app.include_router(analytics.router, prefix="/api/v1/analytics")
+
+@app.get("/admin")
+async def admin_page():
+    return FileResponse(os.path.join(_ROOT, "public/static/admin/index.html"))
+
+@app.get("/liff")
+async def liff_page():
+    return FileResponse(os.path.join(_ROOT, "public/static/liff/index.html"))
 
 @app.get("/")
 def health_check():
