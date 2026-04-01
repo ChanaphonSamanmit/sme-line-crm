@@ -1,9 +1,7 @@
-from http.server import BaseHTTPRequestHandler
-import json
+from fastapi import FastAPI
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps({"status": "ok", "step": "bare-python"}).encode())
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"status": "ok", "step": "fastapi-asgi"}
