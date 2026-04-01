@@ -4,4 +4,7 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.env.vercel
 .DS_Store
+richmenu_image.jpg
+setup_richmenu.py
