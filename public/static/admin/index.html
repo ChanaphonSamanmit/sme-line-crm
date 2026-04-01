@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Admin — SME CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/admin/style.css">
+</head>
+<body>
+ 
+<!-- ════ Sidebar ════ -->
+<nav class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-store"></i></div>
+        <div>
+            <div class="brand-name">SME CRM</div>
+            <div class="brand-sub">POS & Analytics</div>
+        </div>
+    </div>
+ 
+    <div class="sidebar-nav">
+        <div class="menu-section-label">เมนูหลัก</div>
+        <div class="nav-item active" id="nav-pos" onclick="showPage('pos')">
+            <i class="fa-solid fa-cash-register"></i>
+            <span>ขายสินค้า</span>
+        </div>
+        <div class="nav-item" id="nav-products" onclick="showPage('products')">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span>คลังสินค้า</span>
+        </div>
+        <div class="nav-item" id="nav-report" onclick="showPage('report')">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>วิเคราะห์ยอดขาย</span>
+        </div>
+    </div>
+ 
+    <div class="sidebar-status">
+        <div class="online-dot"></div>
+        <span>ระบบออนไลน์</span>
+    </div>
+</nav>
+ 
+<!-- ════ Main ════ -->
+<main class="main-content">
+ 
+    <!-- หน้า: ขายสินค้า -->
+    <div id="page-pos" class="page">
+        <div class="page-header">
+            <div>
+                <h2>ขายสินค้า</h2>
+                <p>เลือกสินค้าเพื่อเพิ่มลงตะกร้า</p>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="ค้นหาสินค้า..." onkeyup="searchProduct(this.value)">
+            </div>
+        </div>
+        <div class="row g-3" id="product-grid"></div>
+    </div>
+ 
+    <!-- หน้า: คลังสินค้า -->
+    <div id="page-products" class="page hidden">
+        <div class="page-header">
+            <div>
+                <h2>คลังสินค้า</h2>
+                <p>จัดการสินค้าทั้งหมด</p>
+            </div>
+            <button class="btn-primary" onclick="openAddModal()">
+                <i class="fa-solid fa-plus"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        <div class="table-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>รูป</th><th>ชื่อสินค้า</th>
+                        <th>ราคาขาย</th><th>ต้นทุน</th><th>กำไร%</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="product-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+ 
+    <!-- หน้า: วิเคราะห์ -->
+    <div id="page-report" class="page hidden">
+        <div class="page-header">
+            <div>
+                <h2>วิเคราะห์ยอดขาย</h2>
+                <p>ภาพรวมรายได้และพฤติกรรมลูกค้า</p>
+            </div>
+            <button class="btn-outline" onclick="loadReport()">
+                <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+        </div>
+ 
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fa-solid fa-baht-sign"></i></div>
+                    <div class="stat-val" id="stat-revenue">—</div>
+                    <div class="stat-lbl">รายได้รวม</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <div class="stat-val" id="stat-orders">—</div>
+                    <div class="stat-lbl">ออเดอร์ทั้งหมด</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card purple">
+                    <div class="stat-icon"><i class="fa-brands fa-line"></i></div>
+                    <div class="stat-val" id="stat-members">—</div>
+                    <div class="stat-lbl">สมาชิก LINE</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card orange">
+                    <div class="stat-icon"><i class="fa-solid fa-person-walking"></i></div>
+                    <div class="stat-val" id="stat-walkin">—</div>
+                    <div class="stat-lbl">ขาจร</div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Chart -->
+        <div class="chart-card mb-4">
+            <div class="chart-header">
+                <div>
+                    <h6>กราฟยอดขาย</h6>
+                    <p>แสดงรายได้ตามช่วงเวลา</p>
+                </div>
+                <div class="toggle-group">
+                    <button class="tog active" id="btn-daily" onclick="switchChart('daily')">รายวัน</button>
+                    <button class="tog" id="btn-monthly" onclick="switchChart('monthly')">รายเดือน</button>
+                </div>
+            </div>
+            <canvas id="salesChart" height="85"></canvas>
+        </div>
+ 
+        <!-- Top Tables -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h6>🏆 ลูกค้าประจำ</h6>
+                    <p class="mb-3">เรียงตามยอดซื้อสะสม</p>
+                    <table id="top-customers-table" class="rank-table">
+                        <tbody><tr><td colspan="3" class="empty-row">กำลังโหลด...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h6>🔥 สินค้าขายดี</h6>
+                    <p class="mb-3">เรียงตามจำนวนขาย</p>
+                    <table id="top-products-table" class="rank-table">
+                        <tbody><tr><td colspan="2" class="empty-row">กำลังโหลด...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Transaction List -->
+        <div class="chart-card">
+            <h6>📋 รายการขายล่าสุด</h6>
+            <p class="mb-3">ประวัติออเดอร์ทั้งหมด</p>
+            <div class="table-scroll">
+                <table class="tx-table">
+                    <thead>
+                        <tr><th>เวลา</th><th>ลูกค้า</th><th>สินค้า</th><th>ยอด</th><th>สถานะ</th></tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        <tr><td colspan="5" class="empty-row">กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+ 
+<!-- ════ Cart Panel ════ -->
+<aside class="cart-panel">
+    <div class="cart-head">
+        <span class="cart-title">
+            <i class="fa-solid fa-basket-shopping"></i> ตะกร้า
+        </span>
+        <span class="cart-badge" id="cart-count">0</span>
+    </div>
+ 
+    <div class="cart-body" id="cart-body">
+        <div class="cart-empty">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <p>ยังไม่มีสินค้า</p>
+        </div>
+    </div>
+ 
+    <div class="cart-foot">
+        <div class="cart-total-row">
+            <span>รวมสุทธิ</span>
+            <span class="cart-total-amt" id="cart-total">฿ 0</span>
+        </div>
+        <button class="checkout-btn" onclick="checkout()">
+            <i class="fa-solid fa-qrcode"></i> สร้าง QR รับเงิน
+        </button>
+        <button class="clear-btn" onclick="clearCart()">ล้างตะกร้า</button>
+    </div>
+</aside>
+ 
+<!-- Modal: เพิ่มสินค้า -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-card">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">เพิ่มสินค้าใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label fw-semibold">ชื่อสินค้า</label>
+                <input id="new-name" type="text" class="field mb-3" placeholder="เช่น กาแฟเย็น, ข้าวผัด...">
+ 
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label fw-semibold">ราคาขาย (฿)</label>
+                        <input id="new-price" type="text" class="field" placeholder="0.00" oninput="fmtNum(this)">
+                    </div>
+                    <div class="col">
+                        <label class="form-label fw-semibold">ต้นทุน (฿)</label>
+                        <input id="new-cost" type="text" class="field" placeholder="0.00" oninput="fmtNum(this)">
+                    </div>
+                </div>
+ 
+                <label class="form-label fw-semibold">รูปสินค้า</label>
+                <input id="new-file" type="file" class="field mb-2" accept="image/*" onchange="handleUpload(this)">
+                <input type="hidden" id="uploaded-url">
+                <div id="upload-status" class="upload-msg hidden">
+                    <i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลด...
+                </div>
+                <img id="img-preview" src="" class="preview-img hidden">
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-light px-4" data-bs-dismiss="modal">ยกเลิก</button>
+                <button class="btn-primary" id="btn-save" onclick="saveProduct()">
+                    <i class="fa-solid fa-check"></i> บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Modal: QR Code -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-card text-center p-4">
+            <div style="font-size:2.5rem">✅</div>
+            <h5 class="fw-bold mt-2">สแกนเพื่อสะสมแต้ม</h5>
+            <div class="qr-amount" id="qr-amount"></div>
+            <div class="qr-box">
+                <img id="qr-img" src="" width="220">
+            </div>
+            <p class="text-muted small mt-2">ให้ลูกค้าสแกนผ่าน LINE</p>
+            <button class="btn btn-outline-secondary mt-1" data-bs-dismiss="modal" onclick="clearCart()">ปิด</button>
+        </div>
+    </div>
+</div>
+ 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/admin/app.js"></script>
+</body>
+</html>
