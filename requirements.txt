@@ -2,6 +2,6 @@ fastapi
 uvicorn[standard]
 python-dotenv
 requests
-line-bot-sdk
+line-bot-sdk>=2.0,<3.0
 supabase
 pydantic-settings
