@@ -1,14 +1,7 @@
 {
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": ["../public/static/**"]
-      }
-    }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/api/index.py" }
+  "rewrites": [
+    { "source": "/admin", "destination": "/static/admin/index.html" },
+    { "source": "/liff",  "destination": "/static/liff/index.html" },
+    { "source": "/(.*)",  "destination": "/api/index.py" }
   ]
 }
