@@ -6,4 +6,5 @@ requests
 aiohttp>=3.9.0
 line-bot-sdk>=2.0,<3.0
 supabase
+pydantic
 pydantic-settings
